@@ -6,7 +6,6 @@
   "scripts": {
     "start": "npm run server",
     "server": "nodemon server"
-
   },
   "repository": {
     "type": "git",
