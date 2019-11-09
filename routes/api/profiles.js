@@ -127,4 +127,27 @@ router.get('/', async (req, res) => {
     }
 });
 
+//@route GET api/profiles/:user_id
+//@desc Getting 1 user's profile by user_id
+//@access Public
+router.get('/:user_id', async (req, res) => {
+    try {
+
+        let profile = await Profile.findOne({ user: req.params.user_id }).populate('user', ['name', 'avatar']);
+
+        //Check if profile exists
+        if (!profile) {
+            return res.status(400).json({ msg: 'Profile not found.' })
+        }
+
+        res.json(profile);
+    } catch (error) {
+        console.error(error.message);
+        if (error.kind == 'ObjectId') {
+            return res.status(400).json({ msg: 'Profile not found.' }); //in case of malformed/invalid user_id, the response is still the same
+        }
+        res.status(500).send('Server error.');
+    }
+});
+
 module.exports = router;
