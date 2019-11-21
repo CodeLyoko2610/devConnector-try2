@@ -4,7 +4,8 @@ const {
     check,
     validationResult
 } = require('express-validator');
-
+const config = require('config');
+const request = require('request');
 //models
 const User = require('../../models/User');
 const Profile = require('../../models/Profile');
@@ -309,4 +310,30 @@ router.delete('/education/:edu_id', auth, async (req, res) => {
     }
 });
 
+//@route GET api/profiles/github/:username
+//@desc Get a user's github repos
+//@access Public
+router.get('/github/:username', (req, res) => {
+    try {
+        let options = {
+            "uri": `https://api.github.com/users/${req.params.username}/repos?per_page=5&sort=created:asc&client_id=${config.get('githubClientId')} & client_secret=${config.get('githubKey')}}`,
+            "method": "GET",
+            "headers": { "user-agent": "node.js" }
+        };
+
+        //Using request to call a http http request directly from the app (not via Postman or the browser)
+        request(options, (error, response, body) => {
+            console.error(error);
+
+            if (response.statusCode !== 200) {
+                return res.status(400).json({ msg: 'No Github profile is found.' });
+            }
+
+            res.json(JSON.parse(body));
+        })
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server error.');
+    }
+})
 module.exports = router;
