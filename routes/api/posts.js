@@ -63,17 +63,41 @@ router.get('/:post_id', auth, async (req, res) => {
     try {
         let post = await Post.findById(req.params.post_id);
 
-        if (!post) return res.send(404).json({ msg: 'Post is not found.' });
+        if (!post) return res.status(404).json({ msg: 'Post is not found.' });
 
         res.json(post);
     } catch (error) {
         console.error(errror.message);
         if (error.kind === 'ObjectId') {
-            return res.send(404).json({ msg: 'Post is not found.' });
+            return res.status(404).json({ msg: 'Post is not found.' });
         }
 
         res.status(500).send('Server error.');
     }
 });
 
+//@route DELETE api/posts/:post_id
+//@desc Delete a post of an authorized user by post:id
+//@access Private
+router.delete('/:post_id', auth, async (req, res) => {
+    try {
+        let postToDelete = await Post.findById(req.params.post_id);
+
+        //Check if post exists
+        if (!postToDelete) return res.status(404).json({ msg: 'Post is not found.' });
+
+        //Check if user is authorized to delete the post
+        if (postToDelete.user.toString() !== req.user.id) {
+            return res.status(401).json({ msg: 'Unauthorized action.' });
+        }
+
+        await postToDelete.remove();
+        res.json({ msg: 'Post is removed.' });
+    } catch (error) {
+        console.error(error.message);
+        if (error.kind === 'ObjectId') return res.status(404).json({ msg: 'Post is not found.' });
+        res.status(500).send('Server error.');
+    }
+});
+    
 module.exports = router;
