@@ -99,5 +99,25 @@ router.delete('/:post_id', auth, async (req, res) => {
         res.status(500).send('Server error.');
     }
 });
-    
+
+//@route PUT api/posts/like/:post_id
+//@desc Like a post as an authorized user
+//@access Private
+router.put('/like/:post_id', auth, async (req, res) => {
+    try {
+        let post = await Post.findById(req.params.post_id);
+
+        //Check if post has been liked
+        if (post.likes.filter(like => (like.user.toString() === req.user.id).length > 0)) return res.status(400).json({ msg: 'Post has already been liked.' });
+
+        post.likes.unshift({ user: req.user.id });
+        await post.save();
+
+        res.json(post.likes);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server error.');
+    }
+})
+
 module.exports = router;
