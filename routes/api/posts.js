@@ -232,28 +232,34 @@ router.delete('/comment/:post_id/:comment_id', auth, async (req, res) => {
     try {
         //find post
         let post = await Post.findById(req.params.post_id);
-        //find comment
-        let commentToDelete = await post.comments.filter(comment => (comment.id.toString() === req.params.comment_id));
 
         //check if comment exists
-        if (!commentToDelete || !post) {
+        if (post.comments.filter(comment => (comment.id.toString() === req.params.comment_id)).length === 0) {
             return res.status(404).json({
                 msg: "Comment or Post is not found."
             });
         }
 
-        //check if user authorized to delete comment
-        if (commentToDelete.user.toString() !== req.user.id) {
+        //Check if user authorized to delete comment
+        let removeIndex = post.comments.map(comment => comment.user.toString()).indexOf(req.user.id);
+        if (removeIndex < 0) {
             return res.status(401).json({
                 msg: "User is not authorized to delete the comment."
             });
         }
 
+        // //check if user authorized to delete comment
+        // if (commentToDelete.user.toString() !== req.user.id) {
+        //     return res.status(401).json({
+        //         msg: "User is not authorized to delete the comment."
+        //     });
+        // }
+
         //delete proccess
-        await commentToDelete.remove();
-        res.json({
-            msg: 'Comment is removed.'
-        })
+        post.comments.splice(removeIndex, 1);
+        await post.save();
+
+        res.json(post.comments);
     } catch (error) {
         console.error(error.message);
         //if comment_id of post_id is undefined
