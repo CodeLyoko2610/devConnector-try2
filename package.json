@@ -8,7 +8,7 @@
     "setup2": "concurrently \"npm install\" \"npm install --prefix client\"",
     "start": "npm run server",
     "server": "nodemon server",
-    "client": "npm start --prefix client",
+    "client": "PORT=3001 npm start --prefix client",
     "dev": "concurrently \"npm run server\" \"npm run client\""
   },
   "repository": {
