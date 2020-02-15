@@ -1,5 +1,6 @@
 import React, { Fragment, useState } from 'react';
 import { Link } from 'react-router-dom';
+const axios = require('axios');
 
 const Register = () => {
   //Create state variable using useState hook
@@ -18,12 +19,37 @@ const Register = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const onSubmit = e => {
+  //Add async for making http request with axios
+  const onSubmit = async e => {
     e.preventDefault();
     if (password !== password2) {
       console.log('Incorect passwords. Please change it.');
     } else {
-      console.log(formData);
+      //Create a new user
+      let newUser = {
+        name,
+        email,
+        password
+      };
+
+      //Setting up the request
+      try {
+        let config = {
+          headers: {
+            'content-type': 'application/json'
+          }
+        };
+
+        let body = JSON.stringify(newUser);
+
+        //Making request using axios to create new user
+        let res = await axios.post('/api/users', body, config); //with proxy specified in package.json, no need to write: http://localhost:8000/
+
+        console.log(res.data);
+      } catch (error) {
+        console.log(error);
+        console.log(error.response.data);
+      }
     }
   };
   return (
